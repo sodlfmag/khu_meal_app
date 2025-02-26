@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'firebase_options.dart'; // flutterfire configure로 생성된 파일
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,6 +31,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String selectedField = "seoul_chungwoon";
+  static const String PREF_DEFAULT_TAB = 'default_tab';
 
   final Map<String, String> tabMapping = {
     "서울캠 청운관": "seoul_chungwoon",
@@ -37,6 +39,24 @@ class _HomeScreenState extends State<HomeScreen> {
     "국제캠 학생회관": "global_studentunion",
     "국제캠 제2기숙사": "global_dorm2",
   };
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedTab();
+  }
+
+  Future<void> _loadSavedTab() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      selectedField = prefs.getString(PREF_DEFAULT_TAB) ?? "seoul_chungwoon";
+    });
+  }
+
+  Future<void> _saveDefaultTab(String tab) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(PREF_DEFAULT_TAB, tab);
+  }
 
   String getCurrentDate() {
     DateTime now = DateTime.now();
@@ -47,7 +67,15 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('경희대 학식 알리미')),
+      appBar: AppBar(
+        title: Text('경희대 학식 알리미'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.settings),
+            onPressed: () => _showSettingsDialog(context),
+          ),
+        ],
+      ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -183,6 +211,36 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showSettingsDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('기본 탭 설정'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: tabMapping.entries.map((entry) {
+              return RadioListTile<String>(
+                title: Text(entry.key),
+                value: entry.value,
+                groupValue: selectedField,
+                onChanged: (value) async {
+                  if (value != null) {
+                    await _saveDefaultTab(value);
+                    setState(() {
+                      selectedField = value;
+                    });
+                    Navigator.pop(context);
+                  }
+                },
+              );
+            }).toList(),
           ),
         );
       },
