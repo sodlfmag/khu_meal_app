@@ -19,3 +19,4 @@ if __name__ == "__main__":
         save_links_to_firestore(links)
     else:
         print("크롤링 결과가 없습니다.")
+

@@ -38,6 +38,12 @@ class _HomeScreenState extends State<HomeScreen> {
     "국제캠 제2기숙사": "global_dorm2",
   };
 
+  String getCurrentDate() {
+    DateTime now = DateTime.now();
+    String weekDay = ['월', '화', '수', '목', '금', '토', '일'][now.weekday - 1];
+    return "${now.year.toString().substring(2)}.${now.month.toString().padLeft(2, '0')}.${now.day.toString().padLeft(2, '0')}($weekDay)";
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -100,50 +106,86 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildImageWidget(BuildContext context, String imageUrl) {
-    return InkWell(
-      onTap: () => _showImageDialog(context, imageUrl),
-      child: Image.network(
-        imageUrl,
-        fit: BoxFit.cover,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Center(child: CircularProgressIndicator());
-        },
-        errorBuilder: (context, error, stackTrace) {
-          return Icon(Icons.error, size: 50, color: Colors.red);
-        },
-      ),
+    String restaurantName = tabMapping.keys.firstWhere(
+      (key) => tabMapping[key] == selectedField,
+      orElse: () => "",
+    );
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Text(
+                getCurrentDate(),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 8),
+              Text(
+                restaurantName,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: InkWell(
+            onTap: () => _showImageDialog(context, imageUrl),
+            child: Image.network(
+              imageUrl,
+              fit: BoxFit.contain,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Center(child: CircularProgressIndicator());
+              },
+              errorBuilder: (context, error, stackTrace) {
+                return Icon(Icons.error, size: 50, color: Colors.red);
+              },
+            ),
+          ),
+        ),
+      ],
     );
   }
 
-void _showImageDialog(BuildContext context, String imageUrl) {
-  showDialog(
-    context: context,
-    builder: (context) {
-      return Container(
-        width: MediaQuery.of(context).size.width, // 전체 너비로 설정
-        height: MediaQuery.of(context).size.height, // 전체 높이로 설정
-        color: Colors.black87, // 배경색 설정
-        child: Stack(
-          children: [
-            PhotoView(
-              imageProvider: NetworkImage(imageUrl),
-              backgroundDecoration: BoxDecoration(color: Colors.black87),
-              minScale: PhotoViewComputedScale.contained,
-              maxScale: PhotoViewComputedScale.covered * 2.5,
-            ),
-            Positioned(
-              top: 20,
-              right: 20,
-              child: IconButton(
-                icon: Icon(Icons.close, color: Colors.white, size: 30),
-                onPressed: () => Navigator.pop(context), // 닫기 버튼 클릭 시 다이얼로그 닫기
+  void _showImageDialog(BuildContext context, String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Container(
+          width: MediaQuery.of(context).size.width, // 전체 너비로 설정
+          height: MediaQuery.of(context).size.height, // 전체 높이로 설정
+          color: Colors.black87, // 배경색 설정
+          child: Stack(
+            children: [
+              PhotoView(
+                imageProvider: NetworkImage(imageUrl),
+                backgroundDecoration: BoxDecoration(color: Colors.black87),
+                minScale: PhotoViewComputedScale.contained,
+                maxScale: PhotoViewComputedScale.covered * 2.5,
               ),
-            ),
-          ],
-        ),
-      );
-    },
-  );
-}
+              Positioned(
+                top: 20,
+                right: 20,
+                child: IconButton(
+                  icon: Icon(Icons.close, color: Colors.white, size: 30),
+                  onPressed: () => Navigator.pop(context), // 닫기 버튼 클릭 시 다이얼로그 닫기
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }
