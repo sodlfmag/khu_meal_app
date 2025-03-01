@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '경희대 학식 알리미',
+      title: '경희대 학식 정보',
       home: HomeScreen(),
     );
   }
@@ -68,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('경희대 학식 알리미'),
+        title: Text('경희대 학식 정보'),
         actions: [
           IconButton(
             icon: Icon(Icons.settings),
@@ -106,19 +106,19 @@ class _HomeScreenState extends State<HomeScreen> {
             } else if (snapshot.hasError) {
               return Text("데이터 로드 중 에러 발생: ${snapshot.error}");
             } else if (!snapshot.hasData || !snapshot.data!.exists) {
-              if (selectedField == "global_dorm2") {
-                return _buildImageWidget(
-                  context,
-                  "https://via.placeholder.com/300?text=국제캠+제2기숙사",
-                );
-              }
               return Text("데이터를 찾을 수 없습니다.");
             } else {
               var data = snapshot.data!.data()!;
               String? imageUrl = data[selectedField];
 
-              if (selectedField == "global_dorm2" && (imageUrl == null || imageUrl.isEmpty)) {
-                imageUrl = "https://via.placeholder.com/300?text=국제캠+제2기숙사";
+              // 제2기숙사인 경우 특별 처리
+              if (selectedField == "global_dorm2") {
+                return Center(
+                  child: Text(
+                    "데이터가 없습니다.",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                );
               }
 
               if (imageUrl == null || imageUrl.isEmpty) {
