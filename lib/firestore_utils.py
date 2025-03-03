@@ -1,4 +1,6 @@
 # firestore_utils.py
+import os
+os.environ['GRPC_DNS_RESOLVER'] = 'native'  # gRPC 경고 메시지 제거
 from google.cloud import firestore
 
 def save_links_to_firestore(links):
@@ -23,3 +25,26 @@ def save_links_to_firestore(links):
     doc_ref = db.collection("menu_links").document("latest")
     doc_ref.set(data)
     print("Firestore에 링크 저장 완료.")
+
+def get_current_links():
+    """Firestore에서 현재 저장된 이미지 링크들을 가져옵니다."""
+    try:
+        db = firestore.Client()
+        doc_ref = db.collection('menu_links').document('latest')
+        doc = doc_ref.get()
+        
+        if doc.exists:
+            data = doc.to_dict()
+            # 학생식당, 교직원식당, 푸드코트 순서로 링크 반환
+            return [
+                data.get('seoul_chungwoon', ''),
+                data.get('seoul_puruensol', ''),
+                data.get('global_studentunion', '')
+            ]
+        else:
+            print("저장된 링크가 없습니다.")
+            return ['', '', '']
+            
+    except Exception as e:
+        print(f"링크 가져오기 실패: {e}")
+        return ['', '', '']
