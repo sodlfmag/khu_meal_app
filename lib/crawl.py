@@ -2,10 +2,18 @@
 import requests
 from bs4 import BeautifulSoup
 
+def is_valid_image_url(url):
+    """이미지 URL이 유효한지 확인합니다."""
+    try:
+        response = requests.head(url, timeout=5)
+        return response.status_code == 200
+    except requests.RequestException:
+        return False
+
 def fetch_image_links(url):
     """
     지정된 URL의 페이지에서 class="elementor-element-99c8767"를 가진 section 내의
-    모든 img 태그에서 실제 이미지 URL(data-src 또는 data-lazy-src, 없으면 src)을 추출합니다.
+    유효한 이미지 URL만 추출합니다.
     """
     response = requests.get(url)
     if response.status_code != 200:
@@ -19,11 +27,15 @@ def fetch_image_links(url):
         return []
     
     img_tags = section.find_all("img")
-    src_list = []
+    valid_src_list = []
+    
     for img in img_tags:
-        # lazy-loading 관련 속성 우선: data-src 또는 data-lazy-src, 없으면 src 사용
         actual_src = img.get("data-src") or img.get("data-lazy-src") or img.get("src")
-        # placeholder data URI는 제외
         if actual_src and not actual_src.startswith("data:"):
-            src_list.append(actual_src)
-    return src_list
+            if is_valid_image_url(actual_src):
+                valid_src_list.append(actual_src)
+                print(f"유효한 이미지 URL 발견: {actual_src}")
+            else:
+                print(f"유효하지 않은 이미지 URL 제외: {actual_src}")
+    
+    return valid_src_list
