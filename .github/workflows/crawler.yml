@@ -26,6 +26,7 @@ jobs:
       run: |
         echo "GOOGLE_APPLICATION_CREDENTIALS=google-credentials.json" > .env
         echo "DISCORD_WEBHOOK_URL=${{ secrets.DISCORD_WEBHOOK_URL }}" >> .env
+        echo "DISCORD_USER_ID=${{ secrets.DISCORD_USER_ID }}" >> .env
     
     - name: Setup Google Cloud Credentials
       run: |
